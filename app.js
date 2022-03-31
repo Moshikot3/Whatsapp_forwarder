@@ -1,5 +1,6 @@
 const qrcode = require('qrcode-terminal');
-
+const configfile = require('./config.json');
+const fs = require('fs');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const client = new Client({
     authStrategy: new LocalAuth({dataPath: 'auth'})
@@ -13,13 +14,58 @@ client.on('ready', () => {
     console.log('Client is ready!');
 });
 
+client.on('message', async (msg) => {
+
+
+console.log(msg.body)
+
+
+    if(msg.from == configfile.SourceGroup){
+
+        console.log(msg.type);
+        for (var Group in configfile.ForwarToGroups){
+            /* NOT READY YET!!!
+            if (msg.type == 'chat') {
+                console.log("Send message")
+                await client.sendMessage(configfile.ForwarToGroups[Group], msg.body);
+            } else if (msg.type == 'ptt') {
+                console.log("Send audio")
+                let audio = await msg.downloadMedia();
+                await client.sendMessage(configfile.ForwarToGroups[Group], audio, {sendAudioAsVoice: true});
+            } else if (msg.type == 'image' || msg.type == 'video') {
+                console.log("Send image/video")
+                let attachmentData = await msg.downloadMedia();
+                // Error mostly comes from sending video
+                await client.sendMessage(configfile.ForwarToGroups[Group], attachmentData, {extra: {
+                    quotedMsg: {
+                        body: msg.body,
+                        type: "chat"
+                    }}});
+            }
+
+            */
+            msg.forward(configfile.ForwarToGroups[Group])
+            console.log(`forward message to ${configfile.ForwarToGroups[Group]}`)
+        }
+    }
+    if (msg.body == '!ping' && msg.author === configfile.Owner+"@c.us") {
+      msg.reply('pong')
+    } else if (msg.body == '!groups' && msg.author === configfile.Owner+"@c.us") {
+      client.getChats().then(chats => {
+        const groups = chats.filter(chat => !chat.isReadOnly && chat.isGroup);
+  
+        if (groups.length == 0) {
+          msg.reply('You have no group yet.');
+        } else {
+          let groupsMsg = '*All active groups listed below:*\n\n';
+          groups.forEach((group, i) => {
+            groupsMsg += `ID: ${group.id._serialized}\nName: ${group.name}\n\n`;
+          });
+          msg.reply(groupsMsg)
+        }
+      });
+    }
+  });
+
+
 client.initialize();
-
-
-client.on('message', message => {
-	console.log(message.body);
-
-    if(message.body === '!ping') {
-		message.reply('pong');
-	}
-});
