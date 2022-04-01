@@ -2,9 +2,25 @@ const qrcode = require('qrcode-terminal');
 const configfile = require('./config.json');
 const fs = require('fs');
 const { Client, LocalAuth } = require('whatsapp-web.js');
+
 const client = new Client({
-    authStrategy: new LocalAuth({dataPath: 'auth'})
+  authStrategy: new LocalAuth({
+      dataPath: 'auth'
+  }),
+  puppeteer: {
+      headless: true,
+      executablePath: configfile.PathToChrome,
+      args: ['--no-sandbox']
+  }
 });
+
+
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 client.on('qr', qr => {
     qrcode.generate(qr, {small: true});
@@ -17,14 +33,14 @@ client.on('ready', () => {
 client.on('message', async (msg) => {
 
 
-console.log(msg.body)
+  console.log('Message from: ', msg.from, " - ", msg.body);
 
 
     if(msg.from == configfile.SourceGroup){
 
         console.log(msg.type);
         for (var Group in configfile.ForwarToGroups){
-            /* NOT READY YET!!!
+          
             if (msg.type == 'chat') {
                 console.log("Send message")
                 await client.sendMessage(configfile.ForwarToGroups[Group], msg.body);
@@ -36,21 +52,20 @@ console.log(msg.body)
                 console.log("Send image/video")
                 let attachmentData = await msg.downloadMedia();
                 // Error mostly comes from sending video
-                await client.sendMessage(configfile.ForwarToGroups[Group], attachmentData, {extra: {
-                    quotedMsg: {
-                        body: msg.body,
-                        type: "chat"
-                    }}});
+                await client.sendMessage(configfile.ForwarToGroups[Group], attachmentData, {caption: msg.body});
             }
-
-            */
-            msg.forward(configfile.ForwarToGroups[Group])
+            await sleep(1000)
+            
+           /* msg.forward(configfile.ForwarToGroups[Group])*/
             console.log(`forward message to ${configfile.ForwarToGroups[Group]}`)
+
+
         }
     }
-    if (msg.body == '!ping' && msg.author === configfile.Owner+"@c.us") {
+
+    if (msg.body == '!ping' && msg.author == configfile.Owner+"@c.us") {
       msg.reply('pong')
-    } else if (msg.body == '!groups' && msg.author === configfile.Owner+"@c.us") {
+    } else if (msg.body == '!groups' && msg.author == configfile.Owner+"@c.us") {
       client.getChats().then(chats => {
         const groups = chats.filter(chat => !chat.isReadOnly && chat.isGroup);
   
