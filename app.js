@@ -2,6 +2,7 @@ const qrcode = require('qrcode-terminal');
 const configfile = require('./config.json');
 const fs = require('fs');
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const { config } = require('process');
 
 const client = new Client({
   authStrategy: new LocalAuth({
@@ -62,23 +63,23 @@ client.on('message', async (msg) => {
 
         }
     }
-
-    if (msg.body == '!ping' && msg.author == configfile.Owner+"@c.us") {
-      msg.reply('pong')
-    } else if (msg.body == '!groups' && msg.author == configfile.Owner+"@c.us") {
-      client.getChats().then(chats => {
-        const groups = chats.filter(chat => !chat.isReadOnly && chat.isGroup);
-  
-        if (groups.length == 0) {
-          msg.reply('You have no group yet.');
-        } else {
-          let groupsMsg = '*All active groups listed below:*\n\n';
-          groups.forEach((group, i) => {
-            groupsMsg += `ID: ${group.id._serialized}\nName: ${group.name}\n\n`;
-          });
-          msg.reply(groupsMsg)
-        }
-      });
+    if(configfile.Owner.includes(msg.author.split('@c.us')[0])){
+      if (msg.body == '!ping') {
+        msg.reply('pong')
+        } else if (msg.body == '!groups') {
+        client.getChats().then(chats => {
+          const groups = chats.filter(chat => !chat.isReadOnly && chat.isGroup);
+          if (groups.length == 0) {
+            msg.reply('You have no group yet.');
+          } else {
+            let groupsMsg = '*All active groups listed below:*\n\n';
+            groups.forEach((group, i) => {
+              groupsMsg += `ID: ${group.id._serialized}\nName: ${group.name}\n\n`;
+            });
+            msg.reply(groupsMsg)
+          }
+        });
+      }
     }
   });
 
