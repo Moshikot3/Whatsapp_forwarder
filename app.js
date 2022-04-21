@@ -2,7 +2,11 @@ const qrcode = require('qrcode-terminal');
 const configfile = require('./config.json');
 const fs = require('fs');
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const { config } = require('process');
+
+const worker = `auth/session/Default/Service Worker`;
+if (fs.existsSync(worker)) {
+  fs.rmSync(worker, { recursive: true });
+}
 
 const client = new Client({
   authStrategy: new LocalAuth({
@@ -37,7 +41,7 @@ client.on('message', async (msg) => {
   console.log('Message from: ', msg.from, " - ", msg.body);
 
 
-    if(msg.from == configfile.SourceGroup){
+    if(msg.from == configfile.SourceGroup && msg.body != '!del'){
 
         console.log(msg.type);
         for (var Group in configfile.ForwarToGroups){
@@ -62,7 +66,18 @@ client.on('message', async (msg) => {
 
 
         }
+    }else if(msg.from == configfile.SourceGroup && msg.body == '!del'){
+
+        for(var Group in configfile.ForwarToGroups){
+
+          let chat = await client.getChatById(configfile.ForwarToGroups[Group]);
+          let [lastMessage] = await chat.fetchMessages({limit: 1});
+          await lastMessage.delete(true);
+          
+       }
+
     }
+
     if(configfile.Owner.includes(msg.author.split('@c.us')[0])){
       if (msg.body == '!ping') {
         msg.reply('pong')
