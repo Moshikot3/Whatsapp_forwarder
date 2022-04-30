@@ -8,12 +8,15 @@ if (fs.existsSync(worker)) {
   fs.rmSync(worker, { recursive: true });
 }
 
+
+
+
 const client = new Client({
   authStrategy: new LocalAuth({
       dataPath: 'auth'
   }),
   puppeteer: {
-      headless: true,
+      headless: false,
       executablePath: configfile.PathToChrome,
       args: ['--no-sandbox']
   }
@@ -78,7 +81,7 @@ client.on('message', async (msg) => {
 
     }
 
-    if(configfile.Owner.includes(msg.author.split('@c.us')[0])){
+    if(configfile.Owner.includes(msg.from.split('@c.us')[0])){
       if (msg.body == '!ping') {
         msg.reply('pong')
         } else if (msg.body == '!groups') {
