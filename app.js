@@ -10,7 +10,6 @@ if (fs.existsSync(worker)) {
 
 
 
-
 const client = new Client({
   authStrategy: new LocalAuth({
       dataPath: 'auth'
