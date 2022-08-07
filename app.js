@@ -23,7 +23,7 @@ const client = new Client({
 
 
 function fn60sec() {
-        let url = "https://www.oref.org.il/WarningMessages/History/AlertsHistory.json";
+        let url = "http://s1.tmv.co.il:4000/";
 
         let options = {json: true};
         
@@ -43,7 +43,7 @@ function fn60sec() {
 				if (fs.readFileSync(__dirname+"/lastalert.json", 'utf-8') != JSON.stringify(body[0]) && msInHour < 10){
 				fs.writeFileSync(__dirname+"/lastalert.json", JSON.stringify(body[0]));
 					for (var Group in configfile.ForwarToGroups){
-					client.sendMessage(configfile.ForwarToGroups[Group], "🚨צבע אדום🚨: \n \n"+body[0].data);
+					client.sendMessage(configfile.ForwarToGroups[Group], "🚨צבע אדום🚨: \n \n"+body[0].data+"\n \n \n *This feature is still in beta*");
 					}
 				}
             };
