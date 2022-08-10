@@ -2,7 +2,7 @@ const qrcode = require('qrcode-terminal');
 const configfile = require('./config.json');
 const fs = require('fs');
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const request = require('request');
+
 const worker = `auth/session/Default/Service Worker`;
 if (fs.existsSync(worker)) {
   fs.rmSync(worker, { recursive: true });
@@ -22,37 +22,6 @@ const client = new Client({
 });
 
 
-function fn60sec() {
-        let url = "https://www.oref.org.il/WarningMessages/History/AlertsHistory.json";
-
-        let options = {json: true};
-        
-        
-        
-        request(url, options, (error, res, body) => {
-            if (error) {
-                return  console.log(error)
-            };
-        
-            if (!error && res.statusCode == 200) {
-                // do something with JSON, using the 'body' variable
-				var date = new Date(body[0].alertDate);
-				var now = new Date();
-				var diffInMS = now - date;
-				var msInHour = Math.floor(diffInMS/1000/60);
-				if (fs.readFileSync(__dirname+"/lastalert.json", 'utf-8') != JSON.stringify(body[0]) && msInHour < 10){
-				fs.writeFileSync(__dirname+"/lastalert.json", JSON.stringify(body[0]));
-					for (var Group in configfile.ForwarToGroups){
-					client.sendMessage(configfile.ForwarToGroups[Group], "🚨צבע אדום🚨: \n \n"+body[0].data);
-					}
-				}
-            };
-        });
-        
-        
-        
-
-}
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -65,14 +34,8 @@ client.on('qr', qr => {
 });
 
 client.on('ready', () => {
-	
     console.log('Client is ready!');
-    setInterval(fn60sec, 5000);
 });
-
-
-
-
 
 client.on('message', async (msg) => {
 
@@ -119,22 +82,6 @@ client.on('message', async (msg) => {
 
     if(configfile.Owner.includes(msg.from.split('@c.us')[0])){
       if (msg.body == '!ping') {
-        let url = "https://www.oref.org.il/WarningMessages/History/AlertsHistory.json";
-
-        let options = {json: true};
-        
-        
-        
-        request(url, options, (error, res, body) => {
-            if (error) {
-                return  console.log(error)
-            };
-        
-            if (!error && res.statusCode == 200) {
-                // do something with JSON, using the 'body' variable
-                console.log(body[0].data)
-            };
-        });
         msg.reply('pong')
         } else if (msg.body == '!groups') {
         client.getChats().then(chats => {
